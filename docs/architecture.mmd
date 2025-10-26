@@ -22,7 +22,7 @@ graph TB
         subgraph "Service Layer"
             DS[DeviceService]
             SDP[SensorDataProcessingService]
-            ANS[AsyncNotificationService\n@Async]
+            ANS[AsyncNotificationService<br/>@Async]
             KP[KafkaProducerService]
             KC[KafkaConsumerService]
         end
@@ -30,7 +30,7 @@ graph TB
         subgraph "Configuration - Singleton Pattern"
             AC[ApplicationConfig<br/>Singleton]
             KFC[KafkaConfig]
-            ASC[AsyncConfig\n@EnableAsync + ThreadPoolTaskExecutor]
+            ASC[AsyncConfig<br/>@EnableAsync + ThreadPoolTaskExecutor]
         end
 
         subgraph "Repository Layer"
