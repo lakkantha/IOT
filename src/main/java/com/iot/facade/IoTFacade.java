@@ -5,14 +5,14 @@ import com.iot.model.SensorData;
 import com.iot.model.dto.DeviceRegistrationDto;
 import com.iot.model.dto.SensorDataDto;
 import com.iot.service.DeviceService;
-import com.iot.service.KafkaProducerService;
+import com.iot.service.AsyncNotificationService;
 import com.iot.service.SensorDataProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.concurrent.CompletableFuture;
+ 
 
 /**
  * Facade pattern implementation that simplifies the interaction with the IoT system.
@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class IoTFacade {
     private final DeviceService deviceService;
     private final SensorDataProcessingService sensorDataProcessingService;
-    private final KafkaProducerService kafkaProducerService;
+    private final AsyncNotificationService asyncNotificationService;
 
     /**
      * Registers a new device and initializes its configuration.
@@ -34,9 +34,8 @@ public class IoTFacade {
         log.info("Registering new device with ID: {}", registrationDto.getDeviceId());
         Device device = deviceService.registerDevice(registrationDto);
         
-        // Async notification of device registration
-        CompletableFuture.runAsync(() -> 
-            kafkaProducerService.sendDeviceRegistration(registrationDto));
+        // Async notification of device registration (using @Async executor)
+        asyncNotificationService.publishDeviceRegistration(registrationDto);
             
         return device;
     }
@@ -61,9 +60,8 @@ public class IoTFacade {
         SensorData sensorData = sensorDataProcessingService.processSensorData(sensorDataDto, device);
         log.debug("Processed sensor data: {}", sensorData);
         
-        // Async send to Kafka for further processing
-        CompletableFuture.runAsync(() -> 
-            kafkaProducerService.sendSensorData(sensorDataDto));
+        // Async send to Kafka for further processing (using @Async executor)
+        asyncNotificationService.publishSensorData(sensorDataDto);
     }
 
     /**

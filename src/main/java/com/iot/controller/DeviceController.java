@@ -4,6 +4,8 @@ import com.iot.facade.IoTFacade;
 import com.iot.model.Device;
 import com.iot.model.dto.DeviceRegistrationDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +18,12 @@ public class DeviceController {
 
     @PostMapping
     public ResponseEntity<Device> registerDevice(@RequestBody DeviceRegistrationDto registrationDto) {
-        Device device = iotFacade.registerNewDevice(registrationDto);
-        return ResponseEntity.ok(device);
+        try {
+            Device device = iotFacade.registerNewDevice(registrationDto);
+            return ResponseEntity.ok(device);
+        } catch (DataIntegrityViolationException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @GetMapping("/{deviceId}")
