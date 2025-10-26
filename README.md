@@ -34,6 +34,7 @@ This system is designed to handle data from over 100,000 IoT devices with the fo
 - Spring Boot 3.1.5
 - Apache Kafka
 - Spring Data JPA
+- Spring Async (ThreadPoolTaskExecutor, @Async)
 - H2 Database (for development)
 - Maven
 - Lombok
@@ -99,6 +100,9 @@ Content-Type: application/json
     }
 }
 ```
+Responses:
+- 200 OK with created device
+- 409 Conflict if deviceId already exists
 
 ### Update Device Status
 ```
@@ -129,9 +133,17 @@ Content-Type: application/json
 
 - Horizontal scaling through Kafka partitioning
 - Stateless application design
+- Asynchronous processing via dedicated thread pool (@Async)
 - Caching mechanisms
 - Database sharding capabilities
 - Load balancing support
+
+## Concurrency & Consistency
+
+- Async execution: `@EnableAsync` with `ThreadPoolTaskExecutor` bean `ioTaskExecutor`.
+- Non-blocking publish: `AsyncNotificationService` uses `@Async("ioTaskExecutor")` to publish Kafka messages.
+- Optimistic locking: `@Version` field added in `BaseEntity` to prevent lost updates under contention.
+- Duplicate registrations: Unique constraint on `Device.deviceId` mapped to HTTP 409 Conflict.
 
 ## Monitoring and Management
 

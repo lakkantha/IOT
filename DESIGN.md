@@ -95,6 +95,7 @@ Benefits:
 - **Spring Boot 3.x**
 - **Spring Data JPA**
 - **Spring Kafka**
+- **Spring Async (@EnableAsync, ThreadPoolTaskExecutor)**
 - **H2 Database** (for development)
 - **Lombok**
 - **Maven**
@@ -106,6 +107,7 @@ Benefits:
 ### Device Management
 - `POST /api/devices` - Register a new device
 - `GET /api/devices/{deviceId}` - Get device details
+- `PUT /api/devices/{deviceId}/status?status=...` - Update device status
 - `DELETE /api/devices/{deviceId}` - Delete a device
 
 ### Sensor Data
@@ -149,8 +151,24 @@ Benefits:
 
 ---
 
+## Concurrency & Consistency
+
+### Concurrency
+- Asynchronous operations are handled via `@EnableAsync` and a dedicated `ThreadPoolTaskExecutor` (`ioTaskExecutor`).
+- `AsyncNotificationService` uses `@Async("ioTaskExecutor")` to publish Kafka events without blocking request threads.
+- REST controllers and services are stateless singletons; safe for concurrent access.
+- Kafka consumers are configured with `concurrency=3` and `batchListener=true`; partitions guarantee in-order processing per partition.
+- Kafka producers are thread-safe; idempotence enabled.
+
+### Consistency
+- Optimistic locking is enabled for all entities via `@Version` in `BaseEntity`.
+- Duplicate device registration is guarded by a unique constraint and mapped to HTTP `409 CONFLICT`.
+
+---
+
 ## Diagrams
-- Architecture and data flow diagrams are located in the `docs/` folder. Use tools like draw.io or Lucidchart to edit or export as needed.
+- Architecture and data flow diagrams are located in the `docs/` folder. Source: Mermaid (`.mmd`) and PlantUML (`.puml`).
+- Regenerate PNGs using mermaid.live or VS Code Mermaid extension and save as `docs/architecture.png` and `docs/dataflow.png`.
 
 ---
 

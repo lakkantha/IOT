@@ -2,6 +2,7 @@ sequenceDiagram
     participant Device as IoT Device
     participant API as REST API<br/>(Controller)
     participant Facade as IoTFacade<br/>(Facade Pattern)
+    participant AsyncSvc as AsyncNotificationService<br/>@Async
     participant Producer as KafkaProducer
     participant Kafka as Kafka Cluster
     participant Consumer as KafkaConsumer
@@ -22,7 +23,9 @@ sequenceDiagram
     DB-->>Repo: device saved
     Repo-->>Service: Device entity
     Service-->>Facade: Device
-    Facade->>Producer: sendDeviceRegistration(dto)
+    Facade->>AsyncSvc: publishDeviceRegistration(dto)
+    Note right of Facade: returns immediately (async)
+    AsyncSvc->>Producer: sendDeviceRegistration(dto)
     Producer->>Kafka: publish to device-registration topic
     Facade-->>API: Device
     API-->>Device: 200 OK {device}
@@ -43,7 +46,9 @@ sequenceDiagram
     Config-->>Service: batch size
     Service->>Service: assessDataQuality(dto)
     Service-->>Facade: SensorData
-    Facade->>Producer: sendSensorData(dto)
+    Facade->>AsyncSvc: publishSensorData(dto)
+    Note right of Facade: returns immediately (async)
+    AsyncSvc->>Producer: sendSensorData(dto)
     Producer->>Kafka: publish to sensor-data topic
     Facade-->>API: success
     API-->>Device: 202 Accepted

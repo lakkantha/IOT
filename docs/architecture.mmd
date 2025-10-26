@@ -22,6 +22,7 @@ graph TB
         subgraph "Service Layer"
             DS[DeviceService]
             SDP[SensorDataProcessingService]
+            ANS[AsyncNotificationService\n@Async]
             KP[KafkaProducerService]
             KC[KafkaConsumerService]
         end
@@ -29,6 +30,7 @@ graph TB
         subgraph "Configuration - Singleton Pattern"
             AC[ApplicationConfig<br/>Singleton]
             KFC[KafkaConfig]
+            ASC[AsyncConfig\n@EnableAsync + ThreadPoolTaskExecutor]
         end
 
         subgraph "Repository Layer"
@@ -63,7 +65,7 @@ graph TB
     %% Facade to Services
     FC --> DS
     FC --> SDP
-    FC --> KP
+    FC --> ANS
 
     %% Kafka Consumer
     T1 --> KC
@@ -75,7 +77,8 @@ graph TB
     SDP -.->|Uses| AC
     DS -.->|Uses| AC
 
-    %% Kafka Producer
+    %% Kafka Producer via Async Notification Service
+    ANS --> KP
     KP -->|Publish| K
     
     %% Services to Repositories
@@ -95,3 +98,5 @@ graph TB
     style DM fill:#9999ff
     style K fill:#ffcc99
     style DB fill:#99ccff
+    style ANS fill:#f2f2f2
+    style ASC fill:#e8ffe8
