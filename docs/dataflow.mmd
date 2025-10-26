@@ -1,0 +1,58 @@
+sequenceDiagram
+    participant Device as IoT Device
+    participant API as REST API<br/>(Controller)
+    participant Facade as IoTFacade<br/>(Facade Pattern)
+    participant Producer as KafkaProducer
+    participant Kafka as Kafka Cluster
+    participant Consumer as KafkaConsumer
+    participant Service as Processing Service
+    participant Config as ApplicationConfig<br/>(Singleton)
+    participant Builder as Device Builder<br/>(Builder Pattern)
+    participant Repo as Repository
+    participant DB as Database
+
+    Note over Device,DB: Device Registration Flow
+    Device->>API: POST /api/devices<br/>{deviceId, type, location}
+    API->>Facade: registerNewDevice(dto)
+    Facade->>Builder: Device.builder()...build()
+    Builder-->>Facade: validated Device
+    Facade->>Service: registerDevice(dto)
+    Service->>Repo: save(device)
+    Repo->>DB: INSERT device
+    DB-->>Repo: device saved
+    Repo-->>Service: Device entity
+    Service-->>Facade: Device
+    Facade->>Producer: sendDeviceRegistration(dto)
+    Producer->>Kafka: publish to device-registration topic
+    Facade-->>API: Device
+    API-->>Device: 200 OK {device}
+
+    Note over Device,DB: Sensor Data Processing Flow
+    Device->>API: POST /api/data<br/>{deviceId, measurements}
+    API->>Facade: processSensorData(dto)
+    Facade->>Service: validateSensorData(dto)
+    Service-->>Facade: validated
+    Facade->>Service: getDeviceById(deviceId)
+    Service->>Repo: findByDeviceId(deviceId)
+    Repo->>DB: SELECT device
+    DB-->>Repo: device data
+    Repo-->>Service: Device
+    Service-->>Facade: Device
+    Facade->>Service: processSensorData(dto, device)
+    Service->>Config: getDeviceBatchSize()
+    Config-->>Service: batch size
+    Service->>Service: assessDataQuality(dto)
+    Service-->>Facade: SensorData
+    Facade->>Producer: sendSensorData(dto)
+    Producer->>Kafka: publish to sensor-data topic
+    Facade-->>API: success
+    API-->>Device: 202 Accepted
+
+    Note over Device,DB: Async Kafka Consumer Processing
+    Kafka->>Consumer: consume sensor-data batch
+    Consumer->>Service: processSensorData(batch)
+    Service->>Repo: saveAll(sensorData)
+    Repo->>DB: BATCH INSERT
+    DB-->>Repo: saved
+    Repo-->>Service: success
+    Service-->>Consumer: processed

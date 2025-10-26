@@ -1,0 +1,104 @@
+@startuml IoT Architecture
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam component {
+    BackgroundColor<<facade>> #ff9999
+    BackgroundColor<<singleton>> #99ff99
+    BackgroundColor<<builder>> #9999ff
+    BackgroundColor<<kafka>> #ffcc99
+    BackgroundColor<<database>> #99ccff
+}
+
+package "IoT Devices Layer" {
+    [IoT Device 1] as D1
+    [IoT Device 2] as D2
+    [IoT Device N...] as D3
+}
+
+package "Message Queue Layer" {
+    component "Kafka Cluster" as Kafka <<kafka>>
+    queue "sensor-data topic" as T1
+    queue "device-registration topic" as T2
+}
+
+package "Spring Boot Application" {
+    
+    package "API Layer - Facade Pattern" {
+        component "IoTFacade" as Facade <<facade>>
+        component "DeviceController" as C1
+        component "SensorDataController" as C2
+        component "AnalyticsController" as C3
+    }
+    
+    package "Service Layer" {
+        component "DeviceService" as DS
+        component "SensorDataProcessingService" as SDP
+        component "KafkaProducerService" as KP
+        component "KafkaConsumerService" as KC
+    }
+    
+    package "Configuration - Singleton Pattern" {
+        component "ApplicationConfig\n(Singleton)" as AC <<singleton>>
+        component "KafkaConfig" as KFC
+    }
+    
+    package "Repository Layer" {
+        component "DeviceRepository" as DR
+        component "SensorDataRepository" as SDR
+    }
+    
+    package "Domain Models - Builder Pattern" {
+        component "Device\n(Builder Pattern)" as DM <<builder>>
+        component "SensorData" as SD
+    }
+}
+
+database "H2/PostgreSQL\nDatabase" as DB <<database>>
+
+' Device connections
+D1 --> Kafka : Send Data
+D2 --> Kafka : Send Data
+D3 --> Kafka : Send Data
+
+' Kafka topics
+Kafka ..> T1
+Kafka ..> T2
+
+' Controller to Facade
+C1 --> Facade
+C2 --> Facade
+C3 --> Facade
+
+' Facade to Services
+Facade --> DS
+Facade --> SDP
+Facade --> KP
+
+' Kafka Consumer
+T1 --> KC
+T2 --> KC
+KC --> DS
+KC --> SDP
+
+' Services to Config
+SDP ..> AC : Uses
+DS ..> AC : Uses
+
+' Kafka Producer
+KP --> Kafka : Publish
+
+' Services to Repositories
+DS --> DR
+SDP --> SDR
+
+' Repositories to Database
+DR --> DB
+SDR --> DB
+
+' Domain Models
+DS ..> DM : Creates
+SDP ..> SD : Creates
+
+@enduml

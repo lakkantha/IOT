@@ -1,0 +1,97 @@
+graph TB
+    subgraph "IoT Devices Layer"
+        D1[IoT Device 1]
+        D2[IoT Device 2]
+        D3[IoT Device N...]
+    end
+
+    subgraph "Message Queue Layer"
+        K[Kafka Cluster]
+        T1[sensor-data topic]
+        T2[device-registration topic]
+    end
+
+    subgraph "Spring Boot Application"
+        subgraph "API Layer - Facade Pattern"
+            FC[IoTFacade]
+            C1[DeviceController]
+            C2[SensorDataController]
+            C3[AnalyticsController]
+        end
+
+        subgraph "Service Layer"
+            DS[DeviceService]
+            SDP[SensorDataProcessingService]
+            KP[KafkaProducerService]
+            KC[KafkaConsumerService]
+        end
+
+        subgraph "Configuration - Singleton Pattern"
+            AC[ApplicationConfig<br/>Singleton]
+            KFC[KafkaConfig]
+        end
+
+        subgraph "Repository Layer"
+            DR[DeviceRepository]
+            SDR[SensorDataRepository]
+        end
+
+        subgraph "Domain Models - Builder Pattern"
+            DM[Device<br/>Builder Pattern]
+            SD[SensorData]
+        end
+    end
+
+    subgraph "Database Layer"
+        DB[(H2/PostgreSQL<br/>Database)]
+    end
+
+    %% Device to Kafka
+    D1 -->|Send Data| K
+    D2 -->|Send Data| K
+    D3 -->|Send Data| K
+
+    %% Kafka Topics
+    K --> T1
+    K --> T2
+
+    %% API to Facade
+    C1 --> FC
+    C2 --> FC
+    C3 --> FC
+
+    %% Facade to Services
+    FC --> DS
+    FC --> SDP
+    FC --> KP
+
+    %% Kafka Consumer
+    T1 --> KC
+    T2 --> KC
+    KC --> DS
+    KC --> SDP
+
+    %% Services to Config
+    SDP -.->|Uses| AC
+    DS -.->|Uses| AC
+
+    %% Kafka Producer
+    KP -->|Publish| K
+    
+    %% Services to Repositories
+    DS --> DR
+    SDP --> SDR
+
+    %% Repositories to Database
+    DR --> DB
+    SDR --> DB
+
+    %% Domain Models
+    DS -.->|Creates| DM
+    SDP -.->|Creates| SD
+
+    style FC fill:#ff9999
+    style AC fill:#99ff99
+    style DM fill:#9999ff
+    style K fill:#ffcc99
+    style DB fill:#99ccff

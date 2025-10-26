@@ -1,0 +1,18 @@
+replicaCount: 3
+image:
+  repository: iot-data-processing
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: LoadBalancer
+  port: 80
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+env:
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_DATASOURCE_URL: jdbc:h2:mem:iotdb

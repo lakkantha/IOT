@@ -1,0 +1,106 @@
+@startuml IoT Data Flow
+skinparam sequenceMessageAlign center
+skinparam backgroundColor #FEFEFE
+
+participant "IoT Device" as Device
+participant "REST API\n(Controller)" as API
+participant "IoTFacade\n(Facade Pattern)" as Facade #ff9999
+participant "KafkaProducer" as Producer
+participant "Kafka Cluster" as Kafka #ffcc99
+participant "KafkaConsumer" as Consumer
+participant "Processing\nService" as Service
+participant "ApplicationConfig\n(Singleton)" as Config #99ff99
+participant "Device Builder\n(Builder Pattern)" as Builder #9999ff
+participant "Repository" as Repo
+participant "Database" as DB #99ccff
+
+== Device Registration Flow ==
+
+Device -> API: POST /api/devices\n{deviceId, type, location}
+activate API
+API -> Facade: registerNewDevice(dto)
+activate Facade
+Facade -> Builder: Device.builder()\n.deviceId(...)\n.build()
+activate Builder
+Builder --> Facade: validated Device
+deactivate Builder
+Facade -> Service: registerDevice(dto)
+activate Service
+Service -> Repo: save(device)
+activate Repo
+Repo -> DB: INSERT device
+activate DB
+DB --> Repo: device saved
+deactivate DB
+Repo --> Service: Device entity
+deactivate Repo
+Service --> Facade: Device
+deactivate Service
+Facade -> Producer: sendDeviceRegistration(dto)
+activate Producer
+Producer -> Kafka: publish to\ndevice-registration topic
+deactivate Producer
+Facade --> API: Device
+deactivate Facade
+API --> Device: 200 OK {device}
+deactivate API
+
+== Sensor Data Processing Flow ==
+
+Device -> API: POST /api/data\n{deviceId, measurements}
+activate API
+API -> Facade: processSensorData(dto)
+activate Facade
+Facade -> Service: validateSensorData(dto)
+activate Service
+Service --> Facade: validated
+deactivate Service
+Facade -> Service: getDeviceById(deviceId)
+activate Service
+Service -> Repo: findByDeviceId(deviceId)
+activate Repo
+Repo -> DB: SELECT device
+activate DB
+DB --> Repo: device data
+deactivate DB
+Repo --> Service: Device
+deactivate Repo
+Service --> Facade: Device
+deactivate Service
+Facade -> Service: processSensorData(dto, device)
+activate Service
+Service -> Config: getDeviceBatchSize()
+activate Config
+Config --> Service: batch size
+deactivate Config
+Service -> Service: assessDataQuality(dto)
+Service --> Facade: SensorData
+deactivate Service
+Facade -> Producer: sendSensorData(dto)
+activate Producer
+Producer -> Kafka: publish to\nsensor-data topic
+deactivate Producer
+Facade --> API: success
+deactivate Facade
+API --> Device: 202 Accepted
+deactivate API
+
+== Async Kafka Consumer Processing ==
+
+Kafka -> Consumer: consume sensor-data batch
+activate Consumer
+Consumer -> Service: processSensorData(batch)
+activate Service
+Service -> Repo: saveAll(sensorData)
+activate Repo
+Repo -> DB: BATCH INSERT
+activate DB
+DB --> Repo: saved
+deactivate DB
+Repo --> Service: success
+deactivate Repo
+Service --> Consumer: processed
+deactivate Service
+deactivate Consumer
+
+@enduml

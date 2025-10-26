@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iot-data-processing
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: iot-data-processing
+  template:
+    metadata:
+      labels:
+        app: iot-data-processing
+    spec:
+      containers:
+      - name: iot-app
+        image: iot-data-processing:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:9092
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:h2:mem:iotdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iot-data-processing-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: iot-data-processing
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
