@@ -1,5 +1,7 @@
 # IoT Data Processing System
 
+Maintainer: Lakkantha
+
 A scalable system for processing and analyzing data from IoT devices, built with Spring Boot and Apache Kafka.
 
 ## System Architecture
@@ -96,6 +98,17 @@ Content-Type: application/json
         "longitude": number
     }
 }
+```
+
+### Update Device Status
+```
+PUT /api/devices/{deviceId}/status
+Query Parameters:
+   status=ACTIVE|INACTIVE|MAINTENANCE|ERROR
+
+Responses:
+   200 OK
+   404 Not Found (if device doesn't exist)
 ```
 
 ### Data Ingestion

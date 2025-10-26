@@ -3,3 +3,5 @@ name: iot-app
 version: 0.1.0
 description: A Helm chart for IoT Data Processing Spring Boot Application
 appVersion: "1.0.0"
+maintainers:
+	- name: Lakkantha
