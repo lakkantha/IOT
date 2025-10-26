@@ -1,4 +1,8 @@
 C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\mapper\SensorDataMapperTest.java
 C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\service\processing\ProcessingPipelineTest.java
+C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\service\DeviceServiceImplTest.java
+C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\controller\DeviceControllerTest.java
+C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\service\SensorDataProcessingServiceImplTest.java
 C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\mapper\DeviceMapperTest.java
+C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\facade\IoTFacadeTest.java
 C:\Users\ASUS\Projects\IOT\IOT\src\test\java\com\iot\service\processing\TemperatureProcessingStrategyTest.java

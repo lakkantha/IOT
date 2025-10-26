@@ -41,10 +41,28 @@ This system is designed to handle data from over 100,000 IoT devices with the fo
 
 ## Prerequisites
 
-- JDK 17 or later
+- JDK 17 (exact); Maven toolchains configured to use JDK 17
 - Maven 3.6 or later
-- Apache Kafka 3.4.1
+- Apache Kafka 3.4.1 (or use docker-compose provided)
 - Docker (optional, for containerization)
+
+### Maven Toolchains (required)
+This project enforces JDK 17 via Maven Toolchains. Ensure you have a JDK 17 installed and a toolchains file at `%UserProfile%\.m2\toolchains.xml` similar to:
+
+```
+<toolchains>
+   <toolchain>
+      <type>jdk</type>
+      <provides>
+         <version>[17,18)</version>
+         <vendor>any</vendor>
+      </provides>
+      <configuration>
+         <jdkHome>C:\Program Files\Eclipse Adoptium\jdk-17.0.x-hotspot</jdkHome>
+      </configuration>
+   </toolchain>
+   </toolchains>
+```
 
 ## Getting Started
 
@@ -54,7 +72,13 @@ This system is designed to handle data from over 100,000 IoT devices with the fo
    cd IOT
    ```
 
-2. Start Kafka (assuming Kafka is installed locally):
+2. Start Kafka (choose one):
+
+   - Using Docker Compose (recommended):
+     - `docker compose up -d` to start Zookeeper, Kafka, and the app containerized
+     - Or start only infra: `docker compose up -d zookeeper kafka`
+
+   - Installed locally:
    ```bash
    # Start Zookeeper
    zookeeper-server-start.bat config/zookeeper.properties
@@ -72,6 +96,24 @@ This system is designed to handle data from over 100,000 IoT devices with the fo
    ```bash
    mvn spring-boot:run
    ```
+
+   On Windows PowerShell, you can also use the helper script:
+
+   ```powershell
+   ./run-local.ps1
+   ```
+
+## Tuning Async Executor
+The async executor is configurable via application.properties. Defaults are reasonable for local dev:
+
+```
+app.async.core-pool-size=8
+app.async.max-pool-size=32
+app.async.queue-capacity=1000
+app.async.thread-name-prefix=io-exec-
+app.async.await-termination-seconds=30
+app.async.wait-for-tasks-to-complete-on-shutdown=true
+```
 
 ## Project Structure
 

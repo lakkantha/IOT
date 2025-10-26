@@ -11,15 +11,21 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfig {
 
+    private final AsyncProperties props;
+
+    public AsyncConfig(AsyncProperties props) {
+        this.props = props;
+    }
+
     @Bean(name = "ioTaskExecutor")
     public Executor ioTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(32);
-        executor.setQueueCapacity(1000);
-        executor.setThreadNamePrefix("io-exec-");
-        executor.setAwaitTerminationSeconds(30);
-        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setCorePoolSize(props.getCorePoolSize());
+        executor.setMaxPoolSize(props.getMaxPoolSize());
+        executor.setQueueCapacity(props.getQueueCapacity());
+        executor.setThreadNamePrefix(props.getThreadNamePrefix());
+        executor.setAwaitTerminationSeconds(props.getAwaitTerminationSeconds());
+        executor.setWaitForTasksToCompleteOnShutdown(props.isWaitForTasksToCompleteOnShutdown());
         executor.initialize();
         return executor;
     }

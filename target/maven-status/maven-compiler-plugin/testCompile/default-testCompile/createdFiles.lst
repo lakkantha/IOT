@@ -1,0 +1,8 @@
+com\iot\controller\DeviceControllerTest.class
+com\iot\facade\IoTFacadeTest.class
+com\iot\mapper\DeviceMapperTest.class
+com\iot\mapper\SensorDataMapperTest.class
+com\iot\service\processing\ProcessingPipelineTest.class
+com\iot\service\processing\TemperatureProcessingStrategyTest.class
+com\iot\service\SensorDataProcessingServiceImplTest.class
+com\iot\service\DeviceServiceImplTest.class

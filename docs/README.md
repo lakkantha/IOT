@@ -5,8 +5,7 @@ This folder contains architecture and data flow diagrams for the IoT Data Proces
 - `architecture.png`: High-level system architecture
 - `dataflow.png`: Data flow from device to analytics
 
-
-You can create or update these diagrams using tools like draw.io, Lucidchart, or any diagramming tool of your choice.
+use  https://mermaid.live/ for digram created.
 
 ---
 
